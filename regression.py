@@ -21,7 +21,7 @@ class GradientDescent:
         self.n = x.shape[0]
         self.theta = np.zeros([self.m, 1])
         self.xtrans = x.transpose()
-        self.gradient = 0
+        self.gradient = np.zeros[self.m, 1]
         self.cost = np.zeros(self.n)
         self.loss = np.zeros([iterations,1])
         self.hypo = np.zeros(self.n)
@@ -38,10 +38,12 @@ class GradientDescent:
         elif self.toggle == "logreg":
             self.hypo = self.sigmoid(linear)
 
-    def batch(self, i):
+    def gradient(self):
         self.hypothesis()
         self.cost = self.y - self.hypo
-        self.loss[i] = np.sum(self.cost ** 2)/self.n
+
+    def batch(self, i):
+        self.loss[i] = np.sum(self.cost ** 2) / self.n
         self.gradient = np.dot(self.xtrans, self.cost)/self.n
 
         # actual algorithm
