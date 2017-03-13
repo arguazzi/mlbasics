@@ -96,4 +96,6 @@ def test_logreg():
 
     print(gd.theta)
 
-test_logreg()
+if __name__ == "__main__":
+    # Test the logistic regression
+    test_logreg()
