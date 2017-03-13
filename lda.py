@@ -45,19 +45,21 @@ class LDA:
 # Test that it actually works
 A = np.random.multivariate_normal([1, 2], [[3, 1], [2, 1.3]], 100)*1.0
 B = np.random.multivariate_normal([2, 4], [[3, 1.2], [2, 1.2]], 100)*1.0
-X = np.concatenate([A, B], axis=0).transpose()
-Y = np.concatenate([np.zeros(100), np.ones(100)])
+C = np.random.multivariate_normal([0, 0], [[3, 1.2], [2, 1.2]], 100)*1.0
+X = np.concatenate([A, B, C], axis=0).transpose()
+Y = np.concatenate([np.zeros(100), np.ones(100), np.ones(100)*2.0])
 
 plt.scatter(A[:, 1], A[:, 0], marker='*')
 plt.scatter(B[:, 1], B[:, 0], marker='o')
+plt.scatter(C[:, 1], C[:, 0], marker='s')
 plt.show()
 
-l = LDA
+l = LDA()
 l.train(X, Y)
 d = l.test(X)
 
-plt.scatter(d[d[:, 0] > d[:, 1], 0], d[d[:, 0] > d[:, 1], 1], marker='x')
-plt.scatter(d[d[:, 0] < d[:, 1], 0], d[d[:, 0] < d[:, 1], 1], marker='s')
+plt.scatter(d[d[:, 0] > d[:, 1], 1], d[d[:, 0] > d[:, 1], 2], marker='x')
+plt.scatter(d[d[:, 0] < d[:, 1], 1], d[d[:, 0] < d[:, 1], 2], marker='s')
 plt.show()
 
 
