@@ -69,7 +69,7 @@ xx[:, 1] = range(0, 100)
 yy = np.zeros([100, 1])
 yy[70:] = 1
 
-c, t = BatchAscent(yy, xx, 0.001, 1000)
+c, t = BatchAscent(yy, xx, 0.001, 100000)
 
 f, axarr = plt.subplots(2, sharex=False)
 axarr[0].plot(c)
