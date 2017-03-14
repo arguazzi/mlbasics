@@ -12,11 +12,11 @@ class GradientDescent:
         self.y = y
 
         if toggle == "linreg":
-            self.alpha = alpha  # minimising least squares - positive term
+            self.alpha = alpha  # minimising least squares
         elif toggle == "logreg":
-            self.alpha = -alpha  # maximising likelihood estimator - negative term
+            self.alpha = -alpha  # maximising likelihood estimator
         elif toggle == "probit":
-            self.alpha = alpha  # maximising likelihood estimator - negative term
+            self.alpha = alpha  # maximising likelihood estimator
         self.toggle = toggle
         self.iterations = iterations
 
@@ -124,15 +124,15 @@ def test_probit():
     yy = np.zeros([100, 1])
     yy[70:] = 1
 
-    gd = GradientDescent(xx, yy, 0.0001, "probit", 100000)
+    gd = GradientDescent(xx, yy, 0.001, "probit", 100000)
     gd.run()
 
     f, axarr = plt.subplots(2, sharex=False)
     axarr[0].plot(gd.loss)
 
     axarr[1].plot(xx[:,1], yy, '.')
-    axarr[1].plot(xx[:,1], gd.sigmoid(np.dot(xx, gd.theta)), '-')
-    axarr[1].plot(xx[:,1], gd.sigmoid(np.dot(xx, gd.theta))>=0.5, '-')
+    axarr[1].plot(xx[:,1], norm.cdf(np.dot(xx, gd.theta)), '-')
+    axarr[1].plot(xx[:,1], norm.cdf(np.dot(xx, gd.theta)) >= 0.5, '-')
 
     plt.show()
 
