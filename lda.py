@@ -1,4 +1,6 @@
 #!/usr/bin/python2
+# -*- coding: utf-8 -*-
+# Author: Alessandro Guazzi
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -61,13 +63,3 @@ if __name__ == '__main__':
     plt.scatter(d[d[:, 0] > d[:, 1], 1], d[d[:, 0] > d[:, 1], 2], marker='x')
     plt.scatter(d[d[:, 0] < d[:, 1], 1], d[d[:, 0] < d[:, 1], 2], marker='s')
     plt.show()
-
-
-
-
-
-
-
-
-
-
