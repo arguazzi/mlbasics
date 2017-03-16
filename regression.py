@@ -1,4 +1,6 @@
-#!/usr/bin/python2
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+# Author: Alessandro Guazzi
 
 import numpy as np
 from scipy.stats import norm
@@ -62,7 +64,19 @@ class LogisticRegression(GradientDescent):
     def update_theta(self):
         self.theta = self.theta - self.alpha * self.grad
 
-class Probit
+
+class ProbitRegression(GradientDescent):
+
+    def calculate_hypothesis(self):
+        self.hypo = norm.cdf(np.dot(self.x, self.theta))
+
+    def calculate_gradient(self):
+        linear = np.dot(self.x, self.theta)
+        pdf = norm.pdf(linear)
+        cdf = norm.cdf(linear)
+        f1 = np.divide(pdf, cdf)
+        f2 = np.divide(pdf, (1 - cdf))
+        self.grad = np.dot(self.xtrans, np.multiply(self.y, f1) - np.multiply(1 - self.y, f2)) / self.n
 
 class GradientDescent0:
 
@@ -183,7 +197,7 @@ def test_probit():
     yy = np.zeros([100, 1])
     yy[70:] = 1
 
-    gd = GradientDescent(xx, yy, 0.001, "probit", 100000)
+    gd = ProbitRegression(xx, yy, 0.001, 100000)
     gd.run()
 
     f, axarr = plt.subplots(2, sharex=False)
@@ -199,4 +213,4 @@ def test_probit():
 
 if __name__ == "__main__":
     # Test the logistic regression
-    test_logreg()
+    test_probit()
