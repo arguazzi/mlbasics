@@ -31,10 +31,10 @@ class GradientDescent:
         self.grad = np.dot(self.xtrans, self.cost) / self.n
 
     def calculate_cost(self):
-        self.cost = self.y - self.hypo
+        self.cost = self.hypo - self.y
 
     def update_theta(self):
-        self.theta = self.theta + self.alpha * self.grad
+        self.theta = self.theta - self.alpha * self.grad
 
     def batch(self, i):
         self.calculate_hypothesis()
@@ -59,18 +59,22 @@ class LogisticRegression(GradientDescent):
         return 1 / (1 + np.exp(k))
 
     def calculate_hypothesis(self):
+        # Correct the hypothesis to lie between 0 and 1
         self.hypo = self.sigmoid(np.dot(self.x, self.theta))
 
     def update_theta(self):
-        self.theta = self.theta - self.alpha * self.grad
+        # Correct to a positive as are using gradient ascent (MLE)
+        self.theta = self.theta + self.alpha * self.grad
 
 
 class ProbitRegression(GradientDescent):
 
     def calculate_hypothesis(self):
+        # Probit model takes the CDF as the function to normalise between 0 and 1
         self.hypo = norm.cdf(np.dot(self.x, self.theta))
 
     def calculate_gradient(self):
+        # Gradient does not simplify much in the case of the Probit model
         linear = np.dot(self.x, self.theta)
         pdf = norm.pdf(linear)
         cdf = norm.cdf(linear)
@@ -78,139 +82,51 @@ class ProbitRegression(GradientDescent):
         f2 = np.divide(pdf, (1 - cdf))
         self.grad = np.dot(self.xtrans, np.multiply(self.y, f1) - np.multiply(1 - self.y, f2)) / self.n
 
-class GradientDescent0:
-
-    def __init__(self, x, y, alpha, toggle, iterations):
-        self.x = x
-        self.y = y
-
-        if toggle == "linreg":
-            self.alpha = alpha  # minimising least squares
-        elif toggle == "logreg":
-            self.alpha = -alpha  # maximising likelihood estimator
-        elif toggle == "probit":
-            self.alpha = alpha  # maximising likelihood estimator
-        self.toggle = toggle
-        self.iterations = iterations
-
-        self.m = x.shape[1]
-        self.n = x.shape[0]
-        self.theta = np.zeros([self.m, 1])
-        self.xtrans = x.transpose()
-        self.grad = np.zeros([self.m, 1])
-        self.cost = np.zeros(self.n)
-        self.loss = np.zeros([iterations,1])
-        self.hypo = np.zeros(self.n)
-
-    @staticmethod
-    def sigmoid(k):
-        return 1 / (1 + np.exp(k))
-
-    def hypothesis(self):
-        linear = np.dot(self.x, self.theta)
-        # Linear case
-        if self.toggle == "linreg":
-            self.hypo = linear
-        elif self.toggle == "logreg":
-            self.hypo = self.sigmoid(linear)
-        elif self.toggle == "probit":
-            self.hypo = norm.cdf(linear)
-
-    def gradient(self):
-        if self.toggle == "linreg":
-            self.grad = np.dot(self.xtrans, self.cost) / self.n
-        elif self.toggle == "logreg":
-            self.grad = np.dot(self.xtrans, self.cost) / self.n
-        elif self.toggle == "probit":
-            linear = np.dot(self.x, self.theta)
-            pdf = norm.pdf(linear)
-            cdf = norm.cdf(linear)
-            f1 = np.divide(pdf, cdf)
-            f2 = np.divide(pdf, (1 - cdf))
-            self.grad = np.dot(self.xtrans, np.multiply(self.y, f1) - np.multiply(1-self.y, f2)) / self.n
-
-    def batch(self, i):
-
-        # form hypothesis
-        self.hypothesis()
-        self.cost = self.y - self.hypo
-        self.loss[i] = np.sum(self.cost ** 2) / self.n
-
-        # estimate gradient
-        self.gradient()
-
-        # update parameter theta
-        self.theta = self.theta + self.alpha*self.grad
-
-    def run(self):
-        for i in range(0, self.iterations):
-            self.batch(i)
+    def update_theta(self):
+        # Correct for gradient ascent
+        self.theta = self.theta + self.alpha * self.grad
 
 
-def test_linreg():
-    # Test Linear regression
-    xx = np.ones([100, 2])
-    xx[:, 1] = range(0, 100)
-    var = 5
-    yy = np.dot(xx, [[50], [5]]) + var*np.random.randn(100, 1)
+def test(family):
+    if family == 'linear':
+        xx = np.ones([100, 2])
+        xx[:, 1] = range(0, 100)
+        var = 5
+        yy = np.dot(xx, [[50], [5]]) + var * np.random.randn(100, 1)
+    elif (family == 'logistic') | (family == 'probit'):
+        xx = np.ones([100, 2])
+        xx[:, 1] = range(0, 100)
+        yy = np.zeros([100, 1])
+        yy[70:] = 1
+        yy[77] = 0
 
-    gd = LinearRegression(xx, yy, 0.0001, 10000)
+    if family == 'linear':
+        gd = LinearRegression(xx, yy, 0.0001, 10000)
+        gd.run()
+    elif family == 'logistic':
+        gd = LogisticRegression(xx, yy, 0.001, 100000)
+        gd.run()
+    elif family == 'probit':
+        gd = ProbitRegression(xx, yy, 0.001, 100000)
+        gd.run()
 
-    gd.run()
+    if family == 'linear':
+        f, axarr = plt.subplots(2, sharex=False)
+        axarr[0].plot(gd.loss)
 
-    f, axarr = plt.subplots(2, sharex=False)
-    axarr[0].plot(gd.loss)
+        axarr[1].plot(xx[:, 1], yy, '.')
+        axarr[1].plot(xx[:, 1], np.dot(xx, gd.theta), '-')
 
-    axarr[1].plot(xx[:, 1], yy, '.')
-    axarr[1].plot(xx[:, 1], np.dot(xx, gd.theta), '-')
-    plt.show()
+    elif (family == 'logistic') | (family == 'probit'):
+        f, axarr = plt.subplots(2, sharex=False)
+        axarr[0].plot(gd.loss)
 
-    print(gd.theta)
-
-
-def test_logreg():
-    # Test Logistic regression
-    xx = np.ones([100, 2])
-    xx[:, 1] = range(0, 100)
-    yy = np.zeros([100, 1])
-    yy[70:] = 1
-
-    gd = LogisticRegression(xx, yy, 0.01, 100000)
-    gd.run()
-
-    f, axarr = plt.subplots(2, sharex=False)
-    axarr[0].plot(gd.loss)
-
-    axarr[1].plot(xx[:,1], yy, '.')
-    axarr[1].plot(xx[:,1], gd.sigmoid(np.dot(xx, gd.theta)), '-')
-    axarr[1].plot(xx[:,1], gd.sigmoid(np.dot(xx, gd.theta))>=0.5, '-')
+        axarr[1].plot(xx[:, 1], yy, '.')
+        axarr[1].plot(xx[:, 1], norm.cdf(np.dot(xx, gd.theta)), '-')
+        axarr[1].plot(xx[:, 1], norm.cdf(np.dot(xx, gd.theta)) >= 0.5, '-')
 
     plt.show()
-
-    print(gd.theta)
-
-
-def test_probit():
-    # Test Logistic regression
-    xx = np.ones([100, 2])
-    xx[:, 1] = range(0, 100)
-    yy = np.zeros([100, 1])
-    yy[70:] = 1
-
-    gd = ProbitRegression(xx, yy, 0.001, 100000)
-    gd.run()
-
-    f, axarr = plt.subplots(2, sharex=False)
-    axarr[0].plot(gd.loss)
-
-    axarr[1].plot(xx[:,1], yy, '.')
-    axarr[1].plot(xx[:,1], norm.cdf(np.dot(xx, gd.theta)), '-')
-    axarr[1].plot(xx[:,1], norm.cdf(np.dot(xx, gd.theta)) >= 0.5, '-')
-
-    plt.show()
-
-    print(gd.theta)
 
 if __name__ == "__main__":
     # Test the logistic regression
-    test_probit()
+    test('logistic')
