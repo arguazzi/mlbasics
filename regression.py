@@ -98,7 +98,6 @@ def test(family):
         xx[:, 1] = range(0, 100)
         yy = np.zeros([100, 1])
         yy[70:] = 1
-        yy[77] = 0
 
     if family == 'linear':
         gd = LinearRegression(xx, yy, 0.0001, 10000)
@@ -122,8 +121,14 @@ def test(family):
         axarr[0].plot(gd.loss)
 
         axarr[1].plot(xx[:, 1], yy, '.')
-        axarr[1].plot(xx[:, 1], norm.cdf(np.dot(xx, gd.theta)), '-')
-        axarr[1].plot(xx[:, 1], norm.cdf(np.dot(xx, gd.theta)) >= 0.5, '-')
+
+        if family == 'logistic':
+            yest = LogisticRegression.sigmoid(np.dot(xx, gd.theta))
+        elif family == 'probit':
+            yest = norm.cdf(np.dot(xx, gd.theta))
+
+        axarr[1].plot(xx[:, 1], yest, '-')
+        axarr[1].plot(xx[:, 1], yest >= 0.5, '-')
 
     plt.show()
 
